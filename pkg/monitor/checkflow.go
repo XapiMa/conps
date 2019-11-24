@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/xapima/conps/pkg/ps"
 	"github.com/xapima/conps/pkg/util"
 )
@@ -83,6 +84,7 @@ func (m *Monitor) getPPidContainerCidName(pid int) (string, string, error) {
 }
 
 func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, string, error) {
+	log.WithFields(log.Fields{"pid": pid, "pidppid": m.pidppid}).Debug("in getPPidContainerCidNameRec")
 	pc, ok := m.pidppid[pid]
 	if !ok {
 		m.pidppid.add(pid)
