@@ -88,8 +88,9 @@ func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, strin
 		m.pidppid.add(pid)
 		pc, _ = m.pidppid[pid]
 	} else if pc.ppid == -1 {
-		m.pidppid.add(pid)
-		pc, _ = m.pidppid[pid]
+		return "", "", fmt.Errorf("unknown ppid: %v\n", pid)
+		// m.pidppid.add(pid)
+		// pc, _ = m.pidppid[pid]
 	}
 	if pc.checkedIsContainer {
 		return pc.containerID, pc.containerName, nil
