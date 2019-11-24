@@ -15,11 +15,12 @@ type cacheItem struct {
 
 type pidPPidCache map[int]*pidItem
 type pidItem struct {
-	pid                int
-	ppid               int
-	childrenPids       map[int]struct{}
-	containerName      string
-	containerID        string
+	pid           int
+	ppid          int
+	childrenPids  map[int]struct{}
+	containerName string
+	containerID   string
+	// if checked : true , else : false
 	checkedIsContainer bool
 }
 

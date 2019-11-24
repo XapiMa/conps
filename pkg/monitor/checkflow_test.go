@@ -18,3 +18,11 @@ func TestInit(t *testing.T) {
 		t.Errorf("cant check: %v\n", err)
 	}
 }
+
+func Test0(t *testing.T) {
+	m, err := NewMonitor()
+	if err != nil {
+		t.Errorf("cant new monitor: %v\n", err)
+	}
+	t.Errorf("pidppid[0] : %v\n", *m.pidppid[0])
+}
