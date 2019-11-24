@@ -1,9 +1,13 @@
 package monitor
 
 import (
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
 
+func init() {
+	log.SetLevel(log.DebugLevel)
+}
 func TestInit(t *testing.T) {
 	m, err := NewMonitor()
 	if err != nil {
