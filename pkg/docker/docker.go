@@ -6,6 +6,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
+	"github.com/xapima/conps/pkg/ps"
 	"github.com/xapima/conps/pkg/util"
 	"golang.org/x/net/context"
 )
@@ -93,7 +94,12 @@ func (d DockerApi) AddNewContainer() error {
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		d.pidcid[int(pid)] = c.ID
+		// c's pid is not containerd-shim
+		cpid, err := ps.PPid(proc, int(pid))
+		if err != nil {
+			return util.ErrorWrapFunc(err)
+		}
+		d.pidcid[cpid] = c.ID
 
 	}
 	for k, v := range d.pidcid {
