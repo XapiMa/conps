@@ -17,6 +17,7 @@ func (m *Monitor) check() error {
 	if err := m.findContainerd(); err != nil {
 		return util.ErrorWrapFunc(err)
 	}
+	log.WithField("containerdPid", m.containerdPid).Debug()
 	if err := m.initialWatch(); err != nil {
 		return util.ErrorWrapFunc(err)
 	}
@@ -95,6 +96,7 @@ func (m *Monitor) setContainerPid() error {
 			return util.ErrorWrapFunc(err)
 		}
 		m.pidppid.addCidName(pid, cid, name)
+		log.WithFields(log.Fields{"pid": pid, "cid": cid}).Debug("containerPid")
 	}
 	return nil
 }
@@ -116,7 +118,6 @@ func (m *Monitor) getPPidContainerCidName(pid int) (string, string, error) {
 }
 
 func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, string, error) {
-	log.WithFields(log.Fields{"pid": pid, "pidppid": m.pidppid}).Debug("in getPPidContainerCidNameRec")
 	pc, ok := m.pidppid[pid]
 	if !ok {
 		if err := m.pidppid.add(pid); err != nil {
