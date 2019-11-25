@@ -28,7 +28,7 @@ func Test0(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	for k, v := range m.pidppid {
-		t.Errorf("%v: %v\n", k, *v)
-	}
+	// for k, v := range m.pidppid {
+	// 	t.Errorf("%v: %v\n", k, *v)
+	// }
 }
