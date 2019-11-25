@@ -93,12 +93,14 @@ func (m *Monitor) setContainerRoot() error {
 	m.containerApi.AddNewContainer()
 	log.WithField("container Api PidCid len", len(m.containerApi.PidCid())).Debug()
 	for pid, cid := range m.containerApi.PidCid() {
-		names, err := m.containerApi.NamesFromCid(cid)
+		nameSet, err := m.containerApi.NamesFromCid(cid)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		m.pidppid.addCidName(pid, cid, names)
-		log.WithFields(log.Fields{"pid": pid, "cid": cid, "names": names}).Debug("setContainerProc")
+		if err := m.pidppid.addCidNameSet(pid, cid, nameSet); err != nil {
+			return util.ErrorWrapFunc(err)
+		}
+		log.WithFields(log.Fields{"pid": pid, "cid": cid, "nameSet": nameSet}).Debug("setContainerProc")
 	}
 	return nil
 }
@@ -111,15 +113,15 @@ func (m *Monitor) isContainerProc(pid int) (bool, error) {
 	return cid != "", nil
 }
 
-func (m *Monitor) getPPidContainerCidName(pid int) (string, []string, error) {
-	cid, names, err := m.getPPidContainerCidNameRec(pid, true)
+func (m *Monitor) getPPidContainerCidName(pid int) (string, map[string]struct{}, error) {
+	cid, nameSet, err := m.getPPidContainerCidNameRec(pid, true)
 	if err != nil {
 		return "", nil, util.ErrorWrapFunc(err)
 	}
-	return cid, names, nil
+	return cid, nameSet, nil
 }
 
-func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, []string, error) {
+func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, map[string]struct{}, error) {
 	pc, ok := m.pidppid[pid]
 	if !ok {
 		if err := m.pidppid.add(pid); err != nil {
@@ -134,9 +136,9 @@ func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, []str
 	}
 
 	if pc.checkedIsContainer {
-		return pc.containerID, pc.containerNames, nil
+		return pc.containerID, pc.containerNameSet, nil
 	}
-	var names []string
+	var nameSet map[string]struct{}
 	var cid string
 
 	if pc.ppid == m.containerdPid {
@@ -153,16 +155,18 @@ func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, []str
 		return "", nil, fmt.Errorf("unknown container id of pid %v", pc.pid)
 	} else {
 		var err error
-		cid, names, err = m.getPPidContainerCidName(pc.ppid)
+		cid, nameSet, err = m.getPPidContainerCidName(pc.ppid)
 		if err != nil {
 			return "", nil, util.ErrorWrapFunc(err)
 		}
 	}
 
 	pc.checkedIsContainer = true
-	pc.containerNames = names
+	for k, v := range nameSet {
+		pc.containerNameSet[k] = v
+	}
 	pc.containerID = cid
-	return cid, names, nil
+	return cid, nameSet, nil
 }
 
 func isContainerd(filePath string) bool {
