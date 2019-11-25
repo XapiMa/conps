@@ -90,12 +90,15 @@ func (d DockerApi) AddNewContainer() error {
 			// trim start character "/"
 			d.cidnames[c.ID] = append(d.cidnames[c.ID], name[1:])
 		}
-		pid, err := d.PidFromCid(c.ID)
+		var err error
+		var pid int32
+		pid, err = d.PidFromCid(c.ID)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
 		// c's pid is not containerd-shim
-		cpid, err := ps.PPid(proc, int(pid))
+		var cpid int
+		cpid, err = ps.PPid(proc, int(pid))
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
