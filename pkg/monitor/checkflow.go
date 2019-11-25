@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
-	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/xapima/conps/pkg/ps"
@@ -27,6 +26,8 @@ func (m *Monitor) check() error {
 	return nil
 }
 
+// initialWache set pidppid and ContainerProcInformation and FdDirectory
+// if you add the directory to watcher, watcher notify information of item in the directory.
 func (m *Monitor) initialWatch() error {
 	proc := "/proc"
 	m.watcher.Add(proc)
@@ -34,23 +35,47 @@ func (m *Monitor) initialWatch() error {
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}
-	wg := &sync.WaitGroup{}
 	for _, fi := range fileinfos {
 		if isNum(fi.Name()) {
 			pid, _ := strconv.Atoi(fi.Name())
-			m.pidppid.add(pid)
-			_, err := m.isContainerProc(pid)
-			if err != nil {
+			if err := m.pidppid.add(pid); err != nil {
+				return util.ErrorWrapFunc(err)
+			}
+			if _, err := m.isContainerProc(pid); err != nil {
 				return util.ErrorWrapFunc(err)
 			}
 			path := filepath.Join(proc, fi.Name())
-			if isFdDir(path) {
-				wg.Add(1)
-				go m.addFd(path, wg)
+			if err := m.addProcNumber(path); err != nil {
+				return util.ErrorWrapFunc(err)
 			}
 		}
 	}
-	wg.Wait()
+	return nil
+}
+
+func (m *Monitor) addProcNumber(path string) error {
+	path = filepath.Clean(path)
+	m.watcher.Add(path)
+	if err := m.addFd(path); err != nil {
+		return util.ErrorWrapFunc(err)
+	}
+	return nil
+}
+
+func (m *Monitor) addFd(path string) error {
+	fdDir := filepath.Join(path, "fd")
+	m.watcher.Add(fdDir)
+	// fileinfos, err := ioutil.ReadDir(fdDir)
+	// if err != nil {
+	// 	return util.ErrorWrapFunc(err)
+	// }
+	// for _, fi := range fileinfos {
+	// 	if isNum(fi.Name()) {
+	// 		if isExist(path) {
+	// 			m.watcher.Add(path)
+	// 		}
+	// 	}
+	// }
 	return nil
 }
 
@@ -87,12 +112,15 @@ func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, strin
 	log.WithFields(log.Fields{"pid": pid, "pidppid": m.pidppid}).Debug("in getPPidContainerCidNameRec")
 	pc, ok := m.pidppid[pid]
 	if !ok {
-		m.pidppid.add(pid)
+		if err := m.pidppid.add(pid); err != nil {
+			return "", "", util.ErrorWrapFunc(err)
+		}
 		pc, _ = m.pidppid[pid]
 	} else if pc.ppid == -1 {
-		return "", "", fmt.Errorf("unknown ppid: %v\n", pid)
-		// m.pidppid.add(pid)
-		// pc, _ = m.pidppid[pid]
+		if err := m.pidppid.add(pid); err != nil {
+			return "", "", util.ErrorWrapFunc(err)
+		}
+		pc, _ = m.pidppid[pid]
 	}
 	if pc.checkedIsContainer {
 		return pc.containerID, pc.containerName, nil
@@ -151,13 +179,6 @@ func (m *Monitor) findContainerd() error {
 		}
 	}
 	return fmt.Errorf("containerd not found")
-}
-
-func (m *Monitor) addFd(path string, wgp *sync.WaitGroup) {
-	defer wgp.Done()
-	if isExist(path) {
-		m.watcher.Add(path)
-	}
 }
 
 func (m *Monitor) setPidCid() error {

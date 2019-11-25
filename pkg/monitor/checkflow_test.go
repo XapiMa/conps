@@ -19,7 +19,7 @@ func TestInit(t *testing.T) {
 	}
 }
 
-func Test0(t *testing.T) {
+func TestAdd(t *testing.T) {
 	m, err := NewMonitor()
 	if err != nil {
 		t.Errorf("cant new monitor: %v\n", err)
@@ -28,7 +28,4 @@ func Test0(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// for k, v := range m.pidppid {
-	// 	t.Errorf("%v: %v\n", k, *v)
-	// }
 }
