@@ -20,7 +20,7 @@ func TestInit(t *testing.T) {
 	for k, v := range m.pidppid {
 		log.WithFields(log.Fields{"pid": k, "values": *v}).Debug()
 	}
-	// t.Errorf("")
+	t.Errorf("")
 }
 
 func TestAdd(t *testing.T) {

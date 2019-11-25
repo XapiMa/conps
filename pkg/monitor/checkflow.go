@@ -91,8 +91,8 @@ func (m *Monitor) addFd(path string) error {
 
 func (m *Monitor) setContainerPid() error {
 	m.containerApi.AddNewContainer()
-	log.WithField("container Api PidCid len", len(m.containerApi.PidCid())).Debug()
-	for pid, cid := range m.containerApi.PidCid() {
+	log.WithField("container Api PidCid len", len(m.containerApi.Pidcid)).Debug()
+	for pid, cid := range m.containerApi.Pidcid {
 		name, err := m.containerApi.NameFromCid(cid)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
@@ -195,7 +195,7 @@ func (m *Monitor) setPidCid() error {
 	if err := m.containerApi.AddNewContainer(); err != nil {
 		return util.ErrorWrapFunc(err)
 	}
-	for pid, cid := range m.containerApi.PidCid() {
+	for pid, cid := range m.containerApi.Pidcid {
 		if _, ok := m.pidppid[pid]; !ok {
 			m.pidppid[pid] = newPidItem()
 		}

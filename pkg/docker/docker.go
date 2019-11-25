@@ -19,7 +19,7 @@ type DockerApi struct {
 	cidinspect CidInspect
 	cidset     CidSet
 	cidname    CidName
-	pidcid     PidCid
+	Pidcid     PidCid
 }
 
 func NewDockerApi() (*DockerApi, error) {
@@ -100,7 +100,7 @@ func (d DockerApi) PidFromCid(cid string) (int32, error) {
 }
 
 func (d DockerApi) CidFromPid(pid int) (string, error) {
-	if cid, ok := d.pidcid[pid]; ok {
+	if cid, ok := d.Pidcid[pid]; ok {
 		return cid, nil
 	} else {
 		return "", util.ErrorWrapFunc(fmt.Errorf("unknown name"))
@@ -114,6 +114,6 @@ func (d DockerApi) NameFromCid(cid string) (string, error) {
 	}
 }
 
-func (d DockerApi) PidCid() PidCid {
-	return d.pidcid
-}
+// func (d DockerApi) PidCid() PidCid {
+// 	return d.pidcid
+// }
