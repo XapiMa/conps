@@ -20,6 +20,9 @@ func (m *Monitor) check() error {
 	if err := m.initialWatch(); err != nil {
 		return util.ErrorWrapFunc(err)
 	}
+	if err := m.setContainerPid(); err != nil {
+		return util.ErrorWrapFunc(err)
+	}
 
 	fmt.Println("Checking processes infomretions")
 
@@ -85,10 +88,14 @@ func (m *Monitor) addFd(path string) error {
 // }
 
 func (m *Monitor) setContainerPid() error {
-	// m.containerApi.
-	// pidとcontainerNameの組み合わせを手に入れ，各コンテナのrootプロセスにNameを割り当てる
-	// len(cpi) == 0 になるまで潜る深さ優先探索で全探索し，親のNameを引き継ぐ
-	//
+	m.containerApi.AddNewContainer()
+	for pid, cid := range m.containerApi.PidCid() {
+		name, err := m.containerApi.NameFromCid(cid)
+		if err != nil {
+			return util.ErrorWrapFunc(err)
+		}
+		m.pidppid.addCidName(pid, cid, name)
+	}
 	return nil
 }
 

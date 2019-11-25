@@ -83,6 +83,20 @@ func (c pidPPidCache) add(pid int) error {
 	return nil
 }
 
+func (c pidPPidCache) addCidName(pid int, cid string, name string) error {
+	if _, ok := c[pid]; !ok {
+		c[pid] = newPidItem()
+	}
+	if c[pid].checkedIsContainer {
+		return nil
+	}
+	c[pid].pid = pid
+	c[pid].containerName = name
+	c[pid].containerID = cid
+	c[pid].checkedIsContainer = true
+	return nil
+}
+
 func newPidItem() *pidItem {
 	// set default ppid : -1
 	return &pidItem{ppid: -1, childrenPids: make(map[int]struct{}), checkedIsContainer: false}
