@@ -33,6 +33,7 @@ func NewDockerApi() (*DockerApi, error) {
 	d.cidinspect = make(CidInspect)
 	d.cidset = make(CidSet)
 	d.cidnames = make(CidNames)
+	d.pidcid = make(PidCid)
 	d.AddNewContainer()
 	return &d, nil
 }
