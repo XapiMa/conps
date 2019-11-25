@@ -19,7 +19,7 @@ func (m *Monitor) check() error {
 	}
 	log.WithField("containerdPid", m.containerdPid).Debug()
 
-	if err := m.setContainerPid(); err != nil {
+	if err := m.setContainerRoot(); err != nil {
 		return util.ErrorWrapFunc(err)
 	}
 	if err := m.initialWatch(); err != nil {
@@ -89,7 +89,7 @@ func (m *Monitor) addFd(path string) error {
 //
 // }
 
-func (m *Monitor) setContainerPid() error {
+func (m *Monitor) setContainerRoot() error {
 	m.containerApi.AddNewContainer()
 	log.WithField("container Api PidCid len", len(m.containerApi.PidCid())).Debug()
 	for pid, cid := range m.containerApi.PidCid() {
@@ -98,17 +98,17 @@ func (m *Monitor) setContainerPid() error {
 			return util.ErrorWrapFunc(err)
 		}
 		m.pidppid.addCidName(pid, cid, names)
-		log.WithFields(log.Fields{"pid": pid, "cid": cid}).Debug("setContainerPid")
+		log.WithFields(log.Fields{"pid": pid, "cid": cid, "names": names}).Debug("setContainerProc")
 	}
 	return nil
 }
 
 func (m *Monitor) isContainerProc(pid int) (bool, error) {
-	_, name, err := m.getPPidContainerCidName(pid)
+	cid, _, err := m.getPPidContainerCidName(pid)
 	if err != nil {
 		return false, util.ErrorWrapFunc(err)
 	}
-	return name != nil, nil
+	return cid != "", nil
 }
 
 func (m *Monitor) getPPidContainerCidName(pid int) (string, []string, error) {
@@ -132,34 +132,37 @@ func (m *Monitor) getPPidContainerCidNameRec(pid int, first bool) (string, []str
 		}
 		pc, _ = m.pidppid[pid]
 	}
+
 	if pc.checkedIsContainer {
 		return pc.containerID, pc.containerNames, nil
-	} else {
-		var names []string
-		var cid string
-		var err error
-		if pc.ppid == m.containerdPid {
-			if first {
-				if err := m.setContainerPid(); err != nil {
-					return "", nil, util.ErrorWrapFunc(err)
-				}
-				cid, name, err := m.getPPidContainerCidNameRec(pid, false)
-				if err != nil {
-					return "", nil, util.ErrorWrapFunc(err)
-				}
-				return cid, name, nil
+	}
+	var names []string
+	var cid string
+
+	if pc.ppid == m.containerdPid {
+		if first {
+			if err := m.setContainerRoot(); err != nil {
+				return "", nil, util.ErrorWrapFunc(err)
 			}
-		} else {
-			cid, names, err = m.getPPidContainerCidName(pc.ppid)
+			cid, name, err := m.getPPidContainerCidNameRec(pid, false)
 			if err != nil {
 				return "", nil, util.ErrorWrapFunc(err)
 			}
+			return cid, name, nil
 		}
-		pc.checkedIsContainer = true
-		pc.containerNames = names
-		pc.containerID = cid
-		return cid, names, nil
+		return "", nil, fmt.Errorf("unknown container id of pid %v", pc.pid)
+	} else {
+		var err error
+		cid, names, err = m.getPPidContainerCidName(pc.ppid)
+		if err != nil {
+			return "", nil, util.ErrorWrapFunc(err)
+		}
 	}
+
+	pc.checkedIsContainer = true
+	pc.containerNames = names
+	pc.containerID = cid
+	return cid, names, nil
 }
 
 func isContainerd(filePath string) bool {
@@ -191,23 +194,23 @@ func (m *Monitor) findContainerd() error {
 	return fmt.Errorf("containerd not found")
 }
 
-func (m *Monitor) setPidCid() error {
-	if err := m.containerApi.AddNewContainer(); err != nil {
-		return util.ErrorWrapFunc(err)
-	}
-	for pid, cid := range m.containerApi.PidCid() {
-		if _, ok := m.pidppid[pid]; !ok {
-			m.pidppid[pid] = newPidItem()
-		}
-		m.pidppid[pid].pid = pid
-		m.pidppid[pid].ppid = m.containerdPid
-		m.pidppid[pid].containerID = cid
-		if names, err := m.containerApi.NamesFromCid(cid); err != nil {
-			return util.ErrorWrapFunc(err)
-		} else {
-			m.pidppid[pid].containerNames = names
-		}
-		m.pidppid[pid].checkedIsContainer = true
-	}
-	return nil
-}
+// func (m *Monitor) setPidCid() error {
+// 	if err := m.containerApi.AddNewContainer(); err != nil {
+// 		return util.ErrorWrapFunc(err)
+// 	}
+// 	for pid, cid := range m.containerApi.PidCid() {
+// 		if _, ok := m.pidppid[pid]; !ok {
+// 			m.pidppid[pid] = newPidItem()
+// 		}
+// 		m.pidppid[pid].pid = pid
+// 		m.pidppid[pid].ppid = m.containerdPid
+// 		m.pidppid[pid].containerID = cid
+// 		if names, err := m.containerApi.NamesFromCid(cid); err != nil {
+// 			return util.ErrorWrapFunc(err)
+// 		} else {
+// 			m.pidppid[pid].containerNames = names
+// 		}
+// 		m.pidppid[pid].checkedIsContainer = true
+// 	}
+// 	return nil
+// }
