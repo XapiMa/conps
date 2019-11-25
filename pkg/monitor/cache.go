@@ -101,7 +101,7 @@ func (c pidPPidCache) addCidNameSet(pid int, cid string, nameSet map[string]stru
 
 func newPidItem() *pidItem {
 	// set default ppid : -1
-	return &pidItem{ppid: -1, childrenPids: make(map[int]struct{}), checkedIsContainer: false}
+	return &pidItem{ppid: -1, childrenPids: make(map[int]struct{}), containerNameSet: make(map[string]struct{}), checkedIsContainer: false}
 }
 
 // func (c cacheCount) in(t *FilterItem) bool {
