@@ -15,11 +15,11 @@ type cacheItem struct {
 
 type pidPPidCache map[int]*pidItem
 type pidItem struct {
-	pid           int
-	ppid          int
-	childrenPids  map[int]struct{}
-	containerName string
-	containerID   string
+	pid            int
+	ppid           int
+	childrenPids   map[int]struct{}
+	containerNames []string
+	containerID    string
 	// if checked : true , else : false
 	checkedIsContainer bool
 }
@@ -83,7 +83,7 @@ func (c pidPPidCache) add(pid int) error {
 	return nil
 }
 
-func (c pidPPidCache) addCidName(pid int, cid string, name string) error {
+func (c pidPPidCache) addCidName(pid int, cid string, names []string) error {
 	if _, ok := c[pid]; !ok {
 		c[pid] = newPidItem()
 	}
@@ -91,7 +91,7 @@ func (c pidPPidCache) addCidName(pid int, cid string, name string) error {
 		return nil
 	}
 	c[pid].pid = pid
-	c[pid].containerName = name
+	c[pid].containerNames = names
 	c[pid].containerID = cid
 	c[pid].checkedIsContainer = true
 	return nil

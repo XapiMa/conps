@@ -12,15 +12,15 @@ import (
 
 type CidInspect map[string]types.ContainerJSON
 type CidSet map[string]struct{}
-type CidName map[string]string
+type CidNames map[string][]string
 type PidCid map[int]string
 
 type DockerApi struct {
 	cli        *client.Client
 	cidinspect CidInspect
 	cidset     CidSet
-	cidname    CidName
-	Pidcid     PidCid
+	cidnames   CidNames
+	pidcid     PidCid
 }
 
 func NewDockerApi() (*DockerApi, error) {
@@ -32,7 +32,7 @@ func NewDockerApi() (*DockerApi, error) {
 	}
 	d.cidinspect = make(CidInspect)
 	d.cidset = make(CidSet)
-	d.cidname = make(CidName)
+	d.cidnames = make(CidNames)
 	d.AddNewContainer()
 	return &d, nil
 }
@@ -86,10 +86,16 @@ func (d DockerApi) AddNewContainer() error {
 		// add cid to map[name]cid
 		for _, name := range c.Names {
 			// trim start character "/"
-			d.cidname[c.ID] = name[1:]
+			d.cidnames[c.ID] = append(d.cidnames[c.ID], name[1:])
 		}
+		pid, err := d.PidFromCid(c.ID)
+		if err != nil {
+			return util.ErrorWrapFunc(err)
+		}
+		d.pidcid[int(pid)] = c.ID
+
 	}
-	log.WithField("DockerApi PidCid len", len(d.Pidcid)).Debug()
+	log.WithField("DockerApi PidCid len", len(d.pidcid)).Debug()
 
 	return nil
 }
@@ -103,20 +109,20 @@ func (d DockerApi) PidFromCid(cid string) (int32, error) {
 }
 
 func (d DockerApi) CidFromPid(pid int) (string, error) {
-	if cid, ok := d.Pidcid[pid]; ok {
+	if cid, ok := d.pidcid[pid]; ok {
 		return cid, nil
 	} else {
 		return "", util.ErrorWrapFunc(fmt.Errorf("unknown name"))
 	}
 }
-func (d DockerApi) NameFromCid(cid string) (string, error) {
-	if name, ok := d.cidname[cid]; !ok {
-		return "", util.ErrorWrapFunc(fmt.Errorf("unkown cid: %v", cid))
+func (d DockerApi) NamesFromCid(cid string) ([]string, error) {
+	if name, ok := d.cidnames[cid]; !ok {
+		return nil, util.ErrorWrapFunc(fmt.Errorf("unkown cid: %v", cid))
 	} else {
 		return name, nil
 	}
 }
 
-// func (d DockerApi) PidCid() PidCid {
-// 	return d.pidcid
-// }
+func (d DockerApi) PidCid() PidCid {
+	return d.pidcid
+}

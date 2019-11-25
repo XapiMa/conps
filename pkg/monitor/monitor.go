@@ -28,7 +28,7 @@ func NewMonitor() (*Monitor, error) {
 	m := new(Monitor)
 	m.cache = make(cache)
 	m.pidppid = make(pidPPidCache)
-	m.pidppid[0] = &pidItem{pid: 0, ppid: 0, childrenPids: make(map[int]struct{}), containerID: "", containerName: "", checkedIsContainer: true}
+	m.pidppid[0] = &pidItem{pid: 0, ppid: 0, childrenPids: make(map[int]struct{}), containerID: "", containerNames: []string{}, checkedIsContainer: true}
 	if containerApi, err := docker.NewDockerApi(); err != nil {
 		return nil, util.ErrorWrapFunc(err)
 	} else {
