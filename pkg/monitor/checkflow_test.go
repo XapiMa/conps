@@ -17,6 +17,9 @@ func TestInit(t *testing.T) {
 	if err != nil {
 		t.Errorf("cant check: %v\n", err)
 	}
+	for k, v := range m.pidppid {
+		log.WithFields(log.Fields{"pid": k, "values": *v}).Debug()
+	}
 }
 
 func TestAdd(t *testing.T) {
