@@ -153,10 +153,10 @@ func TestStatus(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    ps.StatusVals
+		want    ps.StatusValues
 		wantErr bool
 	}{
-		{"/proc/1", args{"/proc/1"}, ps.StatusVals{Name: "sh", Umask: 0o0022, State: "S",
+		{"/proc/1", args{"/proc/1"}, ps.StatusValues{Name: "sh", Umask: 0o0022, State: "S",
 			Tgid: 1, Pid: 1, PPid: 0, TracerPid: 0, Uids: []int32{0, 0, 0, 0}, Gids: []int32{0, 0, 0, 0}, Threads: 1}, false},
 	}
 	for _, tt := range tests {
@@ -168,6 +168,34 @@ func TestStatus(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Status() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPPid(t *testing.T) {
+	type args struct {
+		proc string
+		pid  int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{"1", args{"/proc/", 1}, 0, false},
+		{"3790", args{"/proc/", 3790}, 3789, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ps.PPid(tt.args.proc, tt.args.pid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PPid() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("PPid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

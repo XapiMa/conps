@@ -199,7 +199,7 @@ func Status(filePath string) (StatusValues, error) {
 }
 
 func PPid(proc string, pid int) (int, error) {
-	statusPath := filepath.Join(proc, string(pid), "status")
+	statusPath := filepath.Join(proc, strconv.Itoa(pid), "status")
 	fp, err := os.Open(statusPath)
 	if err != nil {
 		return 0, util.ErrorWrapFunc(err)
