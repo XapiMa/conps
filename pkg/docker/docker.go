@@ -5,6 +5,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	log "github.com/sirupsen/logrus"
 	"github.com/xapima/conps/pkg/util"
 	"golang.org/x/net/context"
 )
@@ -88,6 +89,8 @@ func (d DockerApi) AddNewContainer() error {
 			d.cidname[c.ID] = name[1:]
 		}
 	}
+	log.WithField("DockerApi PidCid len", len(d.Pidcid)).Debug()
+
 	return nil
 }
 
