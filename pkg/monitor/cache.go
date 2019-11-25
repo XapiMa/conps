@@ -65,7 +65,7 @@ func (c pidPPidCache) add(pid int) error {
 			return nil
 		}
 	}
-	ppid, err := ps.PPid(proc, pid)
+	ppid, err := ps.PPid(pid)
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}

@@ -198,7 +198,15 @@ func Status(filePath string) (StatusValues, error) {
 	return sv, nil
 }
 
-func PPid(proc string, pid int) (int, error) {
+func PPid(pid int) (int, error) {
+	ppid, err := PPidWithProcPath(proc, pid)
+	if err != nil {
+		return 0, util.ErrorWrapFunc(err)
+	}
+	return ppid, nil
+}
+
+func PPidWithProcPath(proc string, pid int) (int, error) {
 	statusPath := filepath.Join(proc, strconv.Itoa(pid), "status")
 	fp, err := os.Open(statusPath)
 	if err != nil {

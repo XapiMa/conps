@@ -175,8 +175,7 @@ func TestStatus(t *testing.T) {
 
 func TestPPid(t *testing.T) {
 	type args struct {
-		proc string
-		pid  int
+		pid int
 	}
 	tests := []struct {
 		name    string
@@ -184,12 +183,12 @@ func TestPPid(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"1", args{"/proc/", 1}, 0, false},
-		{"3790", args{"/proc/", 3790}, 3789, false},
+		{"1", args{1}, 0, false},
+		{"3790", args{3790}, 3789, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ps.PPid(tt.args.proc, tt.args.pid)
+			got, err := ps.PPid(tt.args.pid)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PPid() error = %v, wantErr %v", err, tt.wantErr)
 				return

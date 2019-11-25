@@ -98,7 +98,7 @@ func (d DockerApi) AddNewContainer() error {
 		}
 		// c's pid is not containerd-shim
 		var cpid int
-		cpid, err = ps.PPid(proc, int(pid))
+		cpid, err = ps.PPid(int(pid))
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
