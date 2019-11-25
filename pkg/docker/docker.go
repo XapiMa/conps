@@ -96,7 +96,9 @@ func (d DockerApi) AddNewContainer() error {
 		d.pidcid[int(pid)] = c.ID
 
 	}
-	log.WithField("DockerApi PidCid len", len(d.pidcid)).Debug()
+	for k, v := range d.pidcid {
+		log.WithFields(log.Fields{"pid": k, "cid": v}).Debug("DockerApi PidCid")
+	}
 
 	return nil
 }
