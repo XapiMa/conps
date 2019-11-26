@@ -97,14 +97,14 @@ func (d DockerApi) AddNewContainer() error {
 			d.cidnameSet[c.ID][name[1:]] = struct{}{}
 		}
 		var err error
-		var pid int32
+		var pid int
 		pid, err = d.PidFromCid(c.ID)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
 		// c's pid is not containerd-shim
 		var cpid int
-		cpid, err = ps.PPid(int(pid))
+		cpid, err = ps.PPid(pid)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
@@ -118,27 +118,49 @@ func (d DockerApi) AddNewContainer() error {
 	return nil
 }
 
-func (d DockerApi) PidFromCid(cid string) (int32, error) {
-	if inspect, ok := d.cidinspect[cid]; ok {
-		return int32(inspect.State.Pid), nil
-	} else {
-		return 0, util.ErrorWrapFunc(fmt.Errorf("unknown container id : %s", cid))
+func (d DockerApi) PidFromCid(cid string) (int, error) {
+	inspect, ok := d.cidinspect[cid]
+	if ok {
+		return int(inspect.State.Pid), nil
 	}
+	return 0, util.ErrorWrapFunc(fmt.Errorf("unknown container id : %s", cid))
 }
 
 func (d DockerApi) CidFromPid(pid int) (string, error) {
 	if cid, ok := d.pidcid[pid]; ok {
 		return cid, nil
-	} else {
-		return "", util.ErrorWrapFunc(fmt.Errorf("unknown name"))
 	}
+	return "", util.ErrorWrapFunc(fmt.Errorf("unknown name"))
 }
-func (d DockerApi) NamesFromCid(cid string) (map[string]struct{}, error) {
-	if nameSet, ok := d.cidnameSet[cid]; !ok {
-		return nil, util.ErrorWrapFunc(fmt.Errorf("unkown cid: %v", cid))
-	} else {
-		return nameSet, nil
+
+func (d DockerApi) NamesFromCid(cid string) ([]string, error) {
+	if err := d.AddNewContainer(); err != nil {
+		return nil, util.ErrorWrapFunc(err)
 	}
+
+	nameSet, ok := d.cidnameSet[cid]
+	if !ok {
+		return nil, util.ErrorWrapFunc(fmt.Errorf("unkown cid: %v", cid))
+	}
+	names := make([]string, 0, len(nameSet))
+	for k, _ := range nameSet {
+		names = append(names, k)
+	}
+	return names, nil
+}
+
+func (d *DockerApi) CidFromName(name string) (string, error) {
+	if err := d.AddNewContainer(); err != nil {
+		return "", util.ErrorWrapFunc(err)
+	}
+	for cid, nameSet := range d.cidnameSet {
+		for containerName, _ := range nameSet {
+			if containerName == name {
+				return cid, nil
+			}
+		}
+	}
+	return "", util.ErrorWrapFunc(fmt.Errorf("unknown container name: %v", name))
 }
 
 func (d DockerApi) PidCid() PidCid {
@@ -155,18 +177,4 @@ func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, er
 	}
 	merged := d.cidinspect[cid].ContainerJSONBase.GraphDriver.Data["MergedDir"]
 	return filepath.Clean(filepath.Join(merged, path)), nil
-}
-
-func (d *DockerApi) CidFromName(name string) (string, error) {
-	if err := d.AddNewContainer(); err != nil {
-		return "", util.ErrorWrapFunc(err)
-	}
-	for cid, nameSet := range d.cidnameSet {
-		for containerName, _ := range nameSet {
-			if containerName == name {
-				return cid, nil
-			}
-		}
-	}
-	return "", util.ErrorWrapFunc(fmt.Errorf("unknown container name: %v", name))
 }

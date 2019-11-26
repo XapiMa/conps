@@ -23,6 +23,66 @@ func TestNewDockerApi(t *testing.T) {
 	}
 }
 
+func TestDockerApi_PidFromCid(t *testing.T) {
+	type args struct {
+		cid string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantErr bool
+	}{
+		{"alp", args{"c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f"}, 17317, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := NewDockerApi()
+			if err != nil {
+				t.Errorf("cant New Docker API: %v", err)
+			}
+			got, err := d.PidFromCid(tt.args.cid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DockerApi.PidFromCid() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DockerApi.PidFromCid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDockerApi_CidFromPid(t *testing.T) {
+	type args struct {
+		pid int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"alp", args{17317}, "c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := NewDockerApi()
+			if err != nil {
+				t.Errorf("cant New Docker API: %v", err)
+			}
+			got, err := d.CidFromPid(tt.args.pid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DockerApi.CidFromPid() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DockerApi.CidFromPid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestDockerApi_NamesFromCid(t *testing.T) {
 
 	type args struct {
@@ -49,6 +109,36 @@ func TestDockerApi_NamesFromCid(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DockerApi.NameFromCid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDockerApi_CidFromName(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"alp", args{"alp"}, "c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := NewDockerApi()
+			if err != nil {
+				t.Errorf("cant New Docker API: %v", err)
+			}
+			got, err := d.CidFromName(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DockerApi.CidFromName() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DockerApi.CidFromName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -81,36 +171,6 @@ func TestDockerApi_ContainerPathToHostPath(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("DockerApi.ContainerPathToHostPath() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestDockerApi_CidFromName(t *testing.T) {
-	type args struct {
-		name string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{"alp", args{"alp"}, "c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d, err := NewDockerApi()
-			if err != nil {
-				t.Errorf("cant New Docker API: %v", err)
-			}
-			got, err := d.CidFromName(tt.args.name)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("DockerApi.CidFromName() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("DockerApi.CidFromName() = %v, want %v", got, tt.want)
 			}
 		})
 	}

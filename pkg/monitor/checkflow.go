@@ -93,14 +93,14 @@ func (m *Monitor) setContainerRoot() error {
 	m.containerApi.AddNewContainer()
 	log.WithField("container Api PidCid len", len(m.containerApi.PidCid())).Debug()
 	for pid, cid := range m.containerApi.PidCid() {
-		nameSet, err := m.containerApi.NamesFromCid(cid)
+		names, err := m.containerApi.NamesFromCid(cid)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		if err := m.pidppid.addCidNameSet(pid, cid, nameSet); err != nil {
+		if err := m.pidppid.addCidNameSet(pid, cid, names); err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		log.WithFields(log.Fields{"pid": pid, "cid": cid, "nameSet": nameSet}).Debug("setContainerProc")
+		log.WithFields(log.Fields{"pid": pid, "cid": cid, "nameSet": names}).Debug("setContainerProc")
 	}
 	return nil
 }

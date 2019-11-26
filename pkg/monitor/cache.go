@@ -83,7 +83,7 @@ func (c pidPPidCache) add(pid int) error {
 	return nil
 }
 
-func (c pidPPidCache) addCidNameSet(pid int, cid string, nameSet map[string]struct{}) error {
+func (c pidPPidCache) addCidNameSet(pid int, cid string, names []string) error {
 	if _, ok := c[pid]; !ok {
 		c[pid] = newPidItem()
 	}
@@ -91,8 +91,8 @@ func (c pidPPidCache) addCidNameSet(pid int, cid string, nameSet map[string]stru
 		return nil
 	}
 	c[pid].pid = pid
-	for k, v := range nameSet {
-		c[pid].containerNameSet[k] = v
+	for _, name := range names {
+		c[pid].containerNameSet[name] = struct{}{}
 	}
 	c[pid].containerID = cid
 	c[pid].checkedIsContainer = true
