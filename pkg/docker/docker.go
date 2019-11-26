@@ -102,13 +102,7 @@ func (d DockerApi) AddNewContainer() error {
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		// c's pid is not containerd-shim
-		var cpid int
-		cpid, err = ps.PPid(pid)
-		if err != nil {
-			return util.ErrorWrapFunc(err)
-		}
-		d.pidcid[cpid] = c.ID
+		d.pidcid[pid] = c.ID
 
 	}
 	for k, v := range d.pidcid {
@@ -121,8 +115,14 @@ func (d DockerApi) AddNewContainer() error {
 func (d DockerApi) PidFromCid(cid string) (int, error) {
 	inspect, ok := d.cidinspect[cid]
 	if ok {
-		return int(inspect.State.Pid), nil
+		pid := inspect.State.Pid
+		cpid, err := ps.PPid(pid)
+		if err != nil {
+			return 0, util.ErrorWrapFunc(err)
+		}
+		return cpid, nil
 	}
+
 	return 0, util.ErrorWrapFunc(fmt.Errorf("unknown container id : %s", cid))
 }
 
