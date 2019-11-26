@@ -150,10 +150,23 @@ func (d *DockerApi) setCidUidUser(cid string) {
 }
 
 func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, error) {
-	path = filepath.Clean(path)
 	if err := d.AddNewContainer(); err != nil {
 		return "", util.ErrorWrapFunc(err)
 	}
 	merged := d.cidinspect[cid].ContainerJSONBase.GraphDriver.Data["MergedDir"]
 	return filepath.Clean(filepath.Join(merged, path)), nil
+}
+
+func (d *DockerApi) CidFromName(name string) (string, error) {
+	if err := d.AddNewContainer(); err != nil {
+		return "", util.ErrorWrapFunc(err)
+	}
+	for cid, nameSet := range d.cidnameSet {
+		for containerName, _ := range nameSet {
+			if containerName == name {
+				return cid, nil
+			}
+		}
+	}
+	return "", util.ErrorWrapFunc(fmt.Errorf("unknown container name: %v", name))
 }
