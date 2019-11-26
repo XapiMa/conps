@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -15,6 +16,8 @@ type CidInspect map[string]types.ContainerJSON
 type CidSet map[string]struct{}
 type CidNameSet map[string]map[string]struct{}
 type PidCid map[int]string
+type UidUser map[int]string
+type CidUidUser map[string]UidUser
 
 type DockerApi struct {
 	cli        *client.Client
@@ -140,4 +143,17 @@ func (d DockerApi) NamesFromCid(cid string) (map[string]struct{}, error) {
 
 func (d DockerApi) PidCid() PidCid {
 	return d.pidcid
+}
+
+func (d *DockerApi) setCidUidUser(cid string) {
+
+}
+
+func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, error) {
+	path = filepath.Clean(path)
+	if err := d.AddNewContainer(); err != nil {
+		return "", util.ErrorWrapFunc(err)
+	}
+	merged := d.cidinspect[cid].ContainerJSONBase.GraphDriver.Data["MergedDir"]
+	return filepath.Clean(filepath.Join(merged, path)), nil
 }
