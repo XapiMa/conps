@@ -7,6 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	log "github.com/sirupsen/logrus"
 	"github.com/xapima/conps/pkg/util"
 	"golang.org/x/net/context"
 )
@@ -32,6 +33,7 @@ func (d *DockerApi) containerUp(repoTag string, containerName string) (string, e
 }
 
 func (d *DockerApi) containerDown(containerID string) error {
+	log.Debug("in Container Down")
 	statusCh, errCh := d.cli.ContainerWait(context.Background(), containerID, container.WaitConditionRemoved)
 	select {
 	case err := <-errCh:
@@ -40,6 +42,8 @@ func (d *DockerApi) containerDown(containerID string) error {
 		}
 	case <-statusCh:
 	}
+
+	log.Debug("container stoped!")
 
 	if err := d.cli.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{RemoveVolumes: true, RemoveLinks: true, Force: true}); err != nil {
 		return util.ErrorWrapFunc(err)

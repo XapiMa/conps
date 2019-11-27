@@ -1,8 +1,13 @@
 package docker
 
 import (
+	log "github.com/sirupsen/logrus"
 	"testing"
 )
+
+func init() {
+	log.SetLevel(log.DebugLevel)
+}
 
 func TestDockerApi_containerUpDown(t *testing.T) {
 	type args struct {
@@ -27,6 +32,8 @@ func TestDockerApi_containerUpDown(t *testing.T) {
 				t.Errorf("DockerApi.containerUp() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			t.Log("container Uped!")
+			// ContainerDownがうまく動いていない気がする
 			if err := d.containerDown(containerID); (err != nil) != tt.wantErr {
 				t.Errorf("DockerApi.containerDown() error = %v, wantErr %v", err, tt.wantErr)
 			}
