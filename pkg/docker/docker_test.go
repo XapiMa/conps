@@ -39,7 +39,7 @@ func TestDockerApi_PidFromCid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := NewDockerApi()
 			if err != nil {
-				t.Errorf("cant New Docker API: %v", err)
+				t.Errorf("cant create DockerAPI: %v", err)
 			}
 			got, err := d.PidFromCid(tt.args.cid)
 			if (err != nil) != tt.wantErr {
@@ -69,7 +69,7 @@ func TestDockerApi_CidFromPid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := NewDockerApi()
 			if err != nil {
-				t.Errorf("cant New Docker API: %v", err)
+				t.Errorf("cant create DockerAPI: %v", err)
 			}
 			got, err := d.CidFromPid(tt.args.pid)
 			if (err != nil) != tt.wantErr {
@@ -100,7 +100,7 @@ func TestDockerApi_NamesFromCid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := NewDockerApi()
 			if err != nil {
-				t.Errorf("cant new DockerApid: %v", err)
+				t.Errorf("cant create DockerAPI: %v", err)
 			}
 			got, err := d.NamesFromCid(tt.args.cid)
 			if (err != nil) != tt.wantErr {
@@ -130,7 +130,7 @@ func TestDockerApi_CidFromName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := NewDockerApi()
 			if err != nil {
-				t.Errorf("cant New Docker API: %v", err)
+				t.Errorf("cant create DockerAPI: %v", err)
 			}
 			got, err := d.CidFromName(tt.args.name)
 			if (err != nil) != tt.wantErr {
@@ -161,7 +161,7 @@ func TestDockerApi_ContainerPathToHostPath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := NewDockerApi()
 			if err != nil {
-				t.Errorf("cant New Docker API: %v", err)
+				t.Errorf("cant create DockerAPI: %v", err)
 			}
 
 			got, err := d.ContainerPathToHostPath(tt.args.cid, tt.args.path)
@@ -194,7 +194,7 @@ func TestDockerApi_GetUserNameFromCidUid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d, err := NewDockerApi()
 			if err != nil {
-				t.Errorf("cant New Docker API: %v", err)
+				t.Errorf("cant create DockerAPI: %v", err)
 			}
 			got, err := d.GetUserNameFromCidUid(tt.args.cid, tt.args.uid)
 			if (err != nil) != tt.wantErr {
