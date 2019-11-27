@@ -32,7 +32,7 @@ func TestDockerApi_containerUpDown(t *testing.T) {
 				t.Errorf("DockerApi.containerUp() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			t.Log("container Uped!")
+			t.Error("container Uped!")
 			// ContainerDownがうまく動いていない気がする
 			if err := d.containerDown(containerID); (err != nil) != tt.wantErr {
 				t.Errorf("DockerApi.containerDown() error = %v, wantErr %v", err, tt.wantErr)

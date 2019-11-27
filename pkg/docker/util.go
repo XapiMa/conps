@@ -17,6 +17,8 @@ func (d *DockerApi) containerUp(repoTag string, containerName string) (string, e
 	if err != nil {
 		return "", util.ErrorWrapFunc(err)
 	}
+	log.Debug("Image list Got!")
+
 	if !inImage(repoTag, images) {
 		if err := d.imagePull(repoTag); err != nil {
 			return "", util.ErrorWrapFunc(err)
@@ -26,9 +28,11 @@ func (d *DockerApi) containerUp(repoTag string, containerName string) (string, e
 	if err != nil {
 		return "", util.ErrorWrapFunc(err)
 	}
+	log.Debug("Container Created!")
 	if err := d.cli.ContainerStart(context.Background(), resp.ID, types.ContainerStartOptions{}); err != nil {
 		return "", util.ErrorWrapFunc(err)
 	}
+	log.Debug("Container Started")
 	return resp.ID, nil
 }
 
@@ -43,7 +47,7 @@ func (d *DockerApi) containerDown(containerID string) error {
 	case <-statusCh:
 	}
 
-	log.Debug("container stoped!")
+	log.Debug("Container stoped!")
 
 	if err := d.cli.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{RemoveVolumes: true, RemoveLinks: true, Force: true}); err != nil {
 		return util.ErrorWrapFunc(err)
@@ -58,6 +62,8 @@ func (d *DockerApi) imagePull(repoTag string) error {
 		return util.ErrorWrapFunc(err)
 	}
 	io.Copy(os.Stdout, reader)
+	log.Debug("image pulled!")
+
 	return nil
 }
 
