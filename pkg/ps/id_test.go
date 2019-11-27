@@ -57,7 +57,7 @@ func TestGetUidNameMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getUidNameMap(tt.args.rootPath)
+			got, err := GetUidNameMap(tt.args.rootPath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetUidNameMap() error = %v, wantErr %v", err, tt.wantErr)
 				return

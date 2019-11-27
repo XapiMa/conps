@@ -175,3 +175,35 @@ func TestDockerApi_ContainerPathToHostPath(t *testing.T) {
 		})
 	}
 }
+
+func TestDockerApi_GetUserNameFromCidUid(t *testing.T) {
+	type args struct {
+		cid string
+		uid int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"alp_root", args{"c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", 0}, "root", false},
+		{"alp_nobody", args{"c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", 65534}, "nobody", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := NewDockerApi()
+			if err != nil {
+				t.Errorf("cant New Docker API: %v", err)
+			}
+			got, err := d.GetUserNameFromCidUid(tt.args.cid, tt.args.uid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DockerApi.GetUserNameFromCidUid() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DockerApi.GetUserNameFromCidUid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

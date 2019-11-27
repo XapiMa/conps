@@ -16,15 +16,15 @@ type CidInspect map[string]types.ContainerJSON
 type CidSet map[string]struct{}
 type CidNameSet map[string]map[string]struct{}
 type PidCid map[int]string
-type UidUser map[int]string
-type CidUidUser map[string]UidUser
+type CidPasswdMap map[string]ps.PasswdMap
 
 type DockerApi struct {
-	cli        *client.Client
-	cidinspect CidInspect
-	cidset     CidSet
-	cidnameSet CidNameSet
-	pidcid     PidCid
+	cli          *client.Client
+	cidinspect   CidInspect
+	cidset       CidSet
+	cidnameSet   CidNameSet
+	cidPasswdMap CidPasswdMap
+	pidcid       PidCid
 }
 
 func NewDockerApi() (*DockerApi, error) {
@@ -38,6 +38,7 @@ func NewDockerApi() (*DockerApi, error) {
 	d.cidset = make(CidSet)
 	d.cidnameSet = make(CidNameSet)
 	d.pidcid = make(PidCid)
+	d.cidPasswdMap = make(CidPasswdMap)
 	d.AddNewContainer()
 	return &d, nil
 }
@@ -167,8 +168,31 @@ func (d DockerApi) PidCid() PidCid {
 	return d.pidcid
 }
 
-func (d *DockerApi) setCidUidUser(cid string) {
+func (d *DockerApi) GetUserNameFromCidUid(cid string, uid int) (string, error) {
+	if _, ok := d.cidPasswdMap[cid]; !ok {
+		if err := d.setCidPasswdMap(cid); err != nil {
+			return "", util.ErrorWrapFunc(err)
+		}
+	}
+	m := d.cidPasswdMap[cid]
+	if item, ok := m[int32(uid)]; !ok {
+		return "", fmt.Errorf("unknown uid :%v in container: %v", uid, cid)
+	} else {
+		return item.Name, nil
+	}
+}
 
+func (d *DockerApi) setCidPasswdMap(cid string) error {
+	containerRoot, err := d.ContainerPathToHostPath(cid, "/")
+	if err != nil {
+		return util.ErrorWrapFunc(err)
+	}
+	m, err := ps.GetUidNameMap(containerRoot)
+	if err != nil {
+		return util.ErrorWrapFunc(err)
+	}
+	d.cidPasswdMap[cid] = m
+	return nil
 }
 
 func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, error) {

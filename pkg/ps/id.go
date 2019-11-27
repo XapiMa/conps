@@ -30,7 +30,7 @@ type GidVals struct {
 
 type GidMap map[int32]GidVals
 
-func getUidNameMap(rootPath string) (PasswdMap, error) {
+func GetUidNameMap(rootPath string) (PasswdMap, error) {
 	passwdPath := filepath.Join(rootPath, "etc", "passwd")
 	fp, err := os.Open(passwdPath)
 	if err != nil {
