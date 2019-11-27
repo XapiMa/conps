@@ -207,3 +207,39 @@ func TestDockerApi_GetUserNameFromCidUid(t *testing.T) {
 		})
 	}
 }
+
+func TestDockerApi_GetGroupNameFromCidUid(t *testing.T) {
+	type args struct {
+		name string
+		gid  int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"alp_root", args{"alp", 0}, "root", false},
+		{"alp_ping", args{"alp", 999}, "ping", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := NewDockerApi()
+			if err != nil {
+				t.Errorf("cant create DockerAPI: %v", err)
+			}
+			cid, err := d.CidFromName(tt.args.name)
+			if err != nil {
+				t.Errorf("cant get container ID: %v", tt.args.name)
+			}
+			got, err := d.GetGroupNameFromCidUid(cid, tt.args.gid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DockerApi.GetGroupNameFromCidUid() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DockerApi.GetGroupNameFromCidUid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

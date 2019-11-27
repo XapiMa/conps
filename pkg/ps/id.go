@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type PasswdVals struct {
+type PasswdValues struct {
 	Name     string
 	Password string
 	Uid      int32
@@ -19,18 +19,18 @@ type PasswdVals struct {
 	Shell    string
 }
 
-type PasswdMap map[int32]PasswdVals
+type PasswdMap map[int32]PasswdValues
 
-type GidVals struct {
+type GroupValues struct {
 	Name     string
 	Password string
 	Gid      int32
 	Users    []string
 }
 
-type GidMap map[int32]GidVals
+type GroupMap map[int32]GroupValues
 
-func GetUidNameMap(rootPath string) (PasswdMap, error) {
+func GetPasswdMap(rootPath string) (PasswdMap, error) {
 	passwdPath := filepath.Join(rootPath, "etc", "passwd")
 	fp, err := os.Open(passwdPath)
 	if err != nil {
@@ -47,20 +47,20 @@ func GetUidNameMap(rootPath string) (PasswdMap, error) {
 	return m, nil
 }
 
-func parsePasswdLine(line string) (PasswdVals, error) {
+func parsePasswdLine(line string) (PasswdValues, error) {
 	p := strings.Split(line, ":")
 	if len(p) != 7 {
-		return PasswdVals{}, fmt.Errorf("Not passwd line : %s", line)
+		return PasswdValues{}, fmt.Errorf("Not passwd line : %s", line)
 	}
 	uid, err := strconv.ParseInt(p[2], 10, 32)
 	if err != nil {
-		return PasswdVals{}, err
+		return PasswdValues{}, err
 	}
 	gid, err := strconv.ParseInt(p[3], 10, 32)
 	if err != nil {
-		return PasswdVals{}, err
+		return PasswdValues{}, err
 	}
-	return PasswdVals{Name: p[0], Password: p[1], Uid: int32(uid), Gid: int32(gid), Home: p[4], Comment: p[5], Shell: p[6]}, nil
+	return PasswdValues{Name: p[0], Password: p[1], Uid: int32(uid), Gid: int32(gid), Home: p[4], Comment: p[5], Shell: p[6]}, nil
 }
 
 func (m PasswdMap) addLine(line string) error {
@@ -72,7 +72,7 @@ func (m PasswdMap) addLine(line string) error {
 	return nil
 }
 
-func getGidNameMap(rootPath string) (GidMap, error) {
+func GetGroupMap(rootPath string) (GroupMap, error) {
 	groupPath := filepath.Join(rootPath, "etc", "group")
 	fp, err := os.Open(groupPath)
 	if err != nil {
@@ -80,7 +80,7 @@ func getGidNameMap(rootPath string) (GidMap, error) {
 	}
 	defer fp.Close()
 	scanner := bufio.NewScanner(fp)
-	m := make(GidMap)
+	m := make(GroupMap)
 	for scanner.Scan() {
 		if err := m.addLine(scanner.Text()); err != nil {
 			return nil, err
@@ -89,23 +89,23 @@ func getGidNameMap(rootPath string) (GidMap, error) {
 	return m, nil
 }
 
-func parseGroupLine(line string) (GidVals, error) {
+func parseGroupLine(line string) (GroupValues, error) {
 	p := strings.Split(line, ":")
 	if len(p) != 4 {
-		return GidVals{}, fmt.Errorf("Not group line : %s", line)
+		return GroupValues{}, fmt.Errorf("Not group line : %s", line)
 	}
 	gid, err := strconv.ParseInt(p[2], 10, 32)
 	if err != nil {
-		return GidVals{}, err
+		return GroupValues{}, err
 	}
 	users := []string{}
 	if p[3] != "" {
 		users = strings.Split(p[3], ",")
 	}
-	return GidVals{Name: p[0], Password: p[1], Gid: int32(gid), Users: users}, nil
+	return GroupValues{Name: p[0], Password: p[1], Gid: int32(gid), Users: users}, nil
 }
 
-func (m GidMap) addLine(line string) error {
+func (m GroupMap) addLine(line string) error {
 	v, err := parseGroupLine(line)
 	if err != nil {
 		return err

@@ -17,6 +17,7 @@ type CidSet map[string]struct{}
 type CidNameSet map[string]map[string]struct{}
 type PidCid map[int]string
 type CidPasswdMap map[string]ps.PasswdMap
+type CidGroupMap map[string]ps.GroupMap
 
 type DockerApi struct {
 	cli          *client.Client
@@ -24,6 +25,7 @@ type DockerApi struct {
 	cidset       CidSet
 	cidnameSet   CidNameSet
 	cidPasswdMap CidPasswdMap
+	cidGroupMap  CidGroupMap
 	pidcid       PidCid
 }
 
@@ -176,7 +178,7 @@ func (d *DockerApi) GetUserNameFromCidUid(cid string, uid int) (string, error) {
 	}
 	m := d.cidPasswdMap[cid]
 	if item, ok := m[int32(uid)]; !ok {
-		return "", fmt.Errorf("unknown uid :%v in container: %v", uid, cid)
+		return "", fmt.Errorf("unknown uid: %v in container: %v", uid, cid)
 	} else {
 		return item.Name, nil
 	}
@@ -187,11 +189,38 @@ func (d *DockerApi) setCidPasswdMap(cid string) error {
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}
-	m, err := ps.GetUidNameMap(containerRoot)
+	m, err := ps.GetPasswdMap(containerRoot)
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}
 	d.cidPasswdMap[cid] = m
+	return nil
+}
+
+func (d *DockerApi) GetGroupNameFromCidUid(cid string, gid int) (string, error) {
+	if _, ok := d.cidGroupMap[cid]; !ok {
+		if err := d.setGroupMap(cid); err != nil {
+			return "", util.ErrorWrapFunc(err)
+		}
+	}
+	m := d.cidGroupMap[cid]
+	if item, ok := m[int32(gid)]; !ok {
+		return "", fmt.Errorf("unknown gid: %v in container: %v", gid, cid)
+	} else {
+		return item.Name, nil
+	}
+}
+
+func (d *DockerApi) setGroupMap(cid string) error {
+	containerRoot, err := d.ContainerPathToHostPath(cid, "/")
+	if err != nil {
+		return util.ErrorWrapFunc(err)
+	}
+	m, err := ps.GetGroupMap(containerRoot)
+	if err != nil {
+		return util.ErrorWrapFunc(err)
+	}
+	d.cidGroupMap[cid] = m
 	return nil
 }
 
