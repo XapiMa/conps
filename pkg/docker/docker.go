@@ -62,7 +62,6 @@ func (d DockerApi) getAllContainer() ([]types.Container, error) {
 	return containers, nil
 }
 
-// ContainerExecInspect() で事足りるかもしれない
 func (d DockerApi) getInspectFromContainer(container types.Container) (types.ContainerJSON, error) {
 	cJson, err := d.cli.ContainerInspect(context.Background(), container.ID)
 	if err != nil {
