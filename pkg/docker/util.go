@@ -1,6 +1,8 @@
 package docker
 
 import (
+	"io"
+	"os"
 	"path"
 
 	"github.com/docker/docker/api/types"
@@ -47,10 +49,11 @@ func (d *DockerApi) containerDown(containerID string) error {
 }
 
 func (d *DockerApi) imagePull(repoTag string) error {
-	_, err := d.cli.ImagePull(context.Background(), path.Join("docker.io/library", repoTag), types.ImagePullOptions{})
+	reader, err := d.cli.ImagePull(context.Background(), path.Join("docker.io/library", repoTag), types.ImagePullOptions{})
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}
+	io.Copy(os.Stdout, reader)
 	return nil
 }
 
