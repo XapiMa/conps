@@ -41,6 +41,7 @@ func NewDockerApi() (*DockerApi, error) {
 	d.cidnameSet = make(CidNameSet)
 	d.pidcid = make(PidCid)
 	d.cidPasswdMap = make(CidPasswdMap)
+	d.cidGroupMap = make(CidGroupMap)
 	d.AddNewContainer()
 	return &d, nil
 }
