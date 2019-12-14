@@ -38,7 +38,7 @@ func (d *DockerApi) containerUp(repoTag string, containerName string) (string, e
 
 func (d *DockerApi) containerDown(containerID string) error {
 	log.Debug("in Container Down")
-	statusCh, errCh := d.cli.ContainerWait(context.Background(), containerID, container.WaitConditionRemoved)
+	statusCh, errCh := d.cli.ContainerWait(context.Background(), containerID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
 		if err != nil {

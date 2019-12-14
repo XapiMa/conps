@@ -3,6 +3,7 @@ package docker
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -230,4 +231,18 @@ func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, er
 	}
 	merged := d.cidinspect[cid].ContainerJSONBase.GraphDriver.Data["MergedDir"]
 	return filepath.Clean(filepath.Join(merged, path)), nil
+}
+
+func (d *DockerApi) GetDockerIdFromPid(pid int) (string, error) {
+	nameSpace, err := ps.GetPidNameSpace(proc, pid)
+	if err == ps.PidNameSpaceNotFoundError {
+		return "", ThisPidIsNotINContainerError
+	} else if err != nil {
+		return "", util.ErrorWrapFunc(err)
+	}
+	slashParts := strings.Split(nameSpace, "/")
+	if slashParts[0] == "docker" {
+		return slashParts[1], nil
+	}
+	return "", ThisPidIsNotINContainerError
 }

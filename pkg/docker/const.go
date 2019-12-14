@@ -1,5 +1,10 @@
 package docker
 
+import (
+	"fmt"
+)
+
 var (
-	proc = "/proc"
+	proc                         = "/proc"
+	ThisPidIsNotINContainerError = fmt.Errorf("this process is not in container")
 )

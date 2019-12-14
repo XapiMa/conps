@@ -243,3 +243,35 @@ func TestDockerApi_GetGroupNameFromCidUid(t *testing.T) {
 		})
 	}
 }
+
+func TestDockerApi_GetContainerIdFromPid(t *testing.T) {
+
+	type args struct {
+		pid int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"alp", args{17317}, "c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", false},
+		{"notContainerPid", args{17317}, "", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := NewDockerApi()
+			if err != nil {
+				t.Errorf("cant create DockerAPI: %v", err)
+			}
+			got, err := d.GetDockerIdFromPid(tt.args.pid)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DockerApi.GetDockerIdFromPid() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DockerApi.GetDockerIdFromPid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -232,3 +232,26 @@ func PPidWithProcPath(proc string, pid int) (int, error) {
 	}
 	return 0, fmt.Errorf("PPid not found")
 }
+
+func GetPidNameSpace(proc string, pid int) (string, error) {
+	cgroupPath := filepath.Join(proc, strconv.Itoa(pid), "cgroup")
+	fp, err := os.Open(cgroupPath)
+	if err != nil {
+		return "", util.ErrorWrapFunc(err)
+	}
+	defer fp.Close()
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		line := scanner.Text()
+		colonParts := strings.SplitN(line, ":", 3)
+		if len(colonParts) < 3 {
+			continue
+		}
+
+		switch colonParts[1] {
+		case "pids":
+			return colonParts[2], nil
+		}
+	}
+	return "", PidNameSpaceNotFoundError
+}
