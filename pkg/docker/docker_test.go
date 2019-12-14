@@ -255,7 +255,7 @@ func TestDockerApi_GetContainerIdFromPid(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"alp", args{17317}, "c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", false},
+		{"alp", args{17335}, "c32f07b91e9cc82517e2b2eaa5808fca6c64ba359c52926532b565b5fac2f92f", false},
 		{"notContainerPid", args{17317}, "", true},
 	}
 	for _, tt := range tests {
