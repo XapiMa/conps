@@ -236,13 +236,15 @@ func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, er
 func (d *DockerApi) GetDockerIdFromPid(pid int) (string, error) {
 	nameSpace, err := ps.GetPidNameSpace(proc, pid)
 	if err == ps.PidNameSpaceNotFoundError {
-		return "", ThisPidIsNotINContainerError
+		log.Debug("PidNameSpaceNotFound error cause")
+		return "", ThisPidIsNotInContainerError
 	} else if err != nil {
 		return "", util.ErrorWrapFunc(err)
 	}
 	slashParts := strings.Split(nameSpace, "/")
+	log.WithFields(log.Fields{"slashPart0": slashParts[0], "slashPart1": slashParts[1]}).Debug("SlashParts")
 	if slashParts[0] == "docker" {
 		return slashParts[1], nil
 	}
-	return "", ThisPidIsNotINContainerError
+	return "", ThisPidIsNotInContainerError
 }

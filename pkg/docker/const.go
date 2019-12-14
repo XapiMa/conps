@@ -6,5 +6,5 @@ import (
 
 var (
 	proc                         = "/proc"
-	ThisPidIsNotINContainerError = fmt.Errorf("this process is not in container")
+	ThisPidIsNotInContainerError = fmt.Errorf("this process is not in container")
 )
