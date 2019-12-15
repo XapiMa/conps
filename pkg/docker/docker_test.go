@@ -32,7 +32,7 @@ func TestDockerApi_IsContainerProcess(t *testing.T) {
 		args args
 		want bool
 	}{
-		{"alp", args{}, true},
+		{"alp", args{17335}, true},
 		{"init", args{1}, false},
 	}
 	for _, tt := range tests {

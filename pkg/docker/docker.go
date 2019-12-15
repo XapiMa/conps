@@ -171,7 +171,8 @@ func (d DockerApi) GetNameWithCid(cid string) (string, error) {
 	if cjson, ok := d.cidinspect[cid]; !ok {
 		return "", util.ErrorWrapFunc(fmt.Errorf("unkown cid: %v", cid))
 	} else {
-		return cjson.ContainerJSONBase.Name, nil
+		// trim start character "/"
+		return cjson.ContainerJSONBase.Name[1:], nil
 	}
 }
 
