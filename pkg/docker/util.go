@@ -7,6 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/xapima/conps/pkg/util"
 	"golang.org/x/net/context"
@@ -83,4 +84,8 @@ func inSlice(target string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+func unknownCid(cid string) error {
+	return errors.Wrap(UnknownCidError, cid)
 }
