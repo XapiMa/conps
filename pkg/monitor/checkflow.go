@@ -91,14 +91,14 @@ func (m *Monitor) addFd(path string) error {
 
 func (m *Monitor) setContainerRoot() error {
 	for pid, cid := range m.containerApi.PidCid() {
-		names, err := m.containerApi.NamesFromCid(cid)
+		name, err := m.containerApi.GetNameWithCid(cid)
 		if err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		if err := m.pidppid.addCidNameSet(pid, cid, names); err != nil {
+		if err := m.pidppid.addCidNameSet(pid, cid, []string{name}); err != nil {
 			return util.ErrorWrapFunc(err)
 		}
-		log.WithFields(log.Fields{"pid": pid, "cid": cid, "nameSet": names}).Debug("setContainerProc")
+		log.WithFields(log.Fields{"pid": pid, "cid": cid, "nameSet": name}).Debug("setContainerProc")
 	}
 	return nil
 }
