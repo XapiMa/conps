@@ -90,8 +90,6 @@ func (m *Monitor) addFd(path string) error {
 // }
 
 func (m *Monitor) setContainerRoot() error {
-	m.containerApi.AddNewContainer()
-	log.WithField("container Api PidCid len", len(m.containerApi.PidCid())).Debug()
 	for pid, cid := range m.containerApi.PidCid() {
 		names, err := m.containerApi.NamesFromCid(cid)
 		if err != nil {

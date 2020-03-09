@@ -7,6 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/xapima/conps/pkg/ps"
 	"github.com/xapima/conps/pkg/util"
@@ -60,7 +61,7 @@ func (d *DockerApi) setCidWithPid(pid int) error {
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}
-	if err := d.setCid(cid); err != nil {
+	if err := d.SetCid(cid); err != nil {
 		return util.ErrorWrapFunc(err)
 	}
 	d.pidcid[pid] = cid
@@ -87,12 +88,12 @@ func (d DockerApi) getCidFromCgroupWithPid(pid int) (string, error) {
 
 }
 
-func (d *DockerApi) setCid(cid string) error {
+func (d *DockerApi) SetCid(cid string) error {
 	if _, ok := d.cidinspect[cid]; ok {
 		return nil
 	}
 
-	cjson, err := d.getInspectWithCid(cid)
+	cjson, err := d.GetInspectWithCid(cid)
 	if err != nil {
 		return util.ErrorWrapFunc(err)
 	}
@@ -110,7 +111,7 @@ func (d *DockerApi) setCid(cid string) error {
 	return nil
 }
 
-func (d DockerApi) getInspectWithCid(cid string) (types.ContainerJSON, error) {
+func (d *DockerApi) GetInspectWithCid(cid string) (types.ContainerJSON, error) {
 	if cjson, ok := d.cidinspect[cid]; ok {
 		return cjson, nil
 	}
@@ -118,6 +119,7 @@ func (d DockerApi) getInspectWithCid(cid string) (types.ContainerJSON, error) {
 	if err != nil {
 		return types.ContainerJSON{}, util.ErrorWrapFunc(err)
 	}
+	d.cidinspect[cid] = cJson
 	return cJson, nil
 }
 
@@ -217,4 +219,17 @@ func (d *DockerApi) ContainerPathToHostPath(cid string, path string) (string, er
 	}
 	merged := d.cidinspect[cid].ContainerJSONBase.GraphDriver.Data["MergedDir"]
 	return filepath.Clean(filepath.Join(merged, path)), nil
+}
+
+func (d DockerApi) GetCidPasswdMap(cid string) (ps.PasswdMap, error) {
+	if _, ok := d.cidinspect[cid]; !ok {
+		return nil, util.ErrorWrapFunc(errors.Wrapf(UnknownCidError, "cid %v", cid))
+	}
+	return d.cidPasswdMap[cid], nil
+}
+func (d DockerApi) GetCidGroupMap(cid string) (ps.GroupMap, error) {
+	if _, ok := d.cidinspect[cid]; !ok {
+		return nil, util.ErrorWrapFunc(errors.Wrapf(UnknownCidError, "cid %v", cid))
+	}
+	return d.cidGroupMap[cid], nil
 }

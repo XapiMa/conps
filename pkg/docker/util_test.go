@@ -18,7 +18,7 @@ func init() {
 // 		args    args
 // 		wantErr bool
 // 	}{
-// 		{"alpine:3.7", args{"alpine:3.7", "teat_alpine_3.7"}, false},
+// 		{"alpine:3.7", args{"alpine:3.7", "test_alpine_3.7"}, false},
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {

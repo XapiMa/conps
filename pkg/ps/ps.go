@@ -63,18 +63,21 @@ func Cwd(filePath string) (string, error) {
 	return realPath, nil
 }
 func Env(filePath string) (map[string]string, error) {
+	log.Debug("in Env")
+	// envPath := filepath.Join(filePath, "status")
 	envPath := filepath.Join(filePath, "environ")
+	log.Debugf("do Open: %v", envPath)
 	f, err := os.Open(envPath)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-
+	log.Debug("do ReadAll")
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
-	log.WithField("environ_line", string(b)).Debug("plain")
+	log.Debugf("environ_line : %v", string(b))
 	envs := bytes.Split(b, []byte{0})
 	m := make(map[string]string)
 	for _, envString := range envs {
